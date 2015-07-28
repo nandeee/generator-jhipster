@@ -861,6 +861,25 @@ EntityGenerator.prototype.askForDTO = function askForDTO() {
     }.bind(this));
 };
 
+EntityGenerator.prototype.askForTemplate = function askForTemplate() {
+    if (this.useConfigurationFile == true) { // don't prompt if data are imported from a file
+        return;
+    }
+    var cb = this.async();
+    var prompts = [
+        {
+            type: 'confirm',
+            name: 'customTemplate',
+            message: 'Do you want to use the custom template for your entity?',
+            default: true
+        }
+    ];
+    this.prompt(prompts, function (props) {
+        this.customTemplate = props.customTemplate;
+        cb();
+    }.bind(this));
+};
+
 EntityGenerator.prototype.askForPagination = function askForPagination() {
     if (this.useConfigurationFile == true) { // don't prompt if data are imported from a file
         return;
@@ -924,6 +943,7 @@ EntityGenerator.prototype.files = function files() {
         this.data.changelogDate = this.changelogDate;
         this.data.dto = this.dto;
         this.data.pagination = this.pagination;
+        this.data.customTemplate = this.customTemplate;
         this.data.validation = this.validation;
         this.write(this.filename, JSON.stringify(this.data, null, 4));
     } else  {
@@ -967,6 +987,10 @@ EntityGenerator.prototype.files = function files() {
         if (this.pagination == undefined) {
             this.pagination = 'no';
         }
+        this.customTemplate = this.fileData.customTemplate;
+        if (this.customTemplate == undefined) {
+            this.customTemplate = false;
+        }
         this.validation = this.fileData.validation;
         if (this.validation == undefined) {
             this.validation = false;
@@ -976,9 +1000,14 @@ EntityGenerator.prototype.files = function files() {
     // Expose utility methods in templates
     this.util = {};
     this.util.contains = _.contains;
-
+    // asdf
     this.entityClass = _s.capitalize(this.name);
     this.entityInstance = this.name.charAt(0).toLowerCase() + this.name.slice(1);
+    if (this.customTemplate) {
+        var templatePrefix = 'custom-';
+    } else {
+        var templatePrefix = '';
+    };
 
     this.differentTypes = [this.entityClass];
     var relationshipId;
@@ -1074,7 +1103,7 @@ EntityGenerator.prototype.files = function files() {
             resourceDir + 'config/cql/' + this.changelogDate + '_added_entity_' + this.entityClass + '.cql', this, {});
     }
 
-    this.copyHtml('src/main/webapp/app/_entities.html',
+    this.copyHtml('src/main/webapp/app/_' + templatePrefix + 'entities.html',
         'src/main/webapp/scripts/app/entities/' +    this.entityInstance  + '/' + this.entityInstance + 's.html', this, {}, true);
     this.copyHtml('src/main/webapp/app/_entity-detail.html',
         'src/main/webapp/scripts/app/entities/' +    this.entityInstance  + '/' + this.entityInstance + '-detail.html', this, {}, true);
@@ -1086,7 +1115,7 @@ EntityGenerator.prototype.files = function files() {
     this.template('src/main/webapp/app/_entity.js',
         'src/main/webapp/scripts/app/entities/' +    this.entityInstance + '/' + this.entityInstance + '.js', this, {});
     this.addAppScriptToIndex(this.entityInstance + '/' + this.entityInstance + '.js');
-    this.template('src/main/webapp/app/_entity-controller.js',
+    this.template('src/main/webapp/app/_' + templatePrefix + 'entity-controller.js',
         'src/main/webapp/scripts/app/entities/' +    this.entityInstance + '/' + this.entityInstance + '.controller' + '.js', this, {});
     this.addAppScriptToIndex(this.entityInstance + '/' + this.entityInstance + '.controller' + '.js');
     this.template('src/main/webapp/app/_entity-dialog-controller.js',
@@ -1097,12 +1126,12 @@ EntityGenerator.prototype.files = function files() {
         'src/main/webapp/scripts/app/entities/' +    this.entityInstance + '/' + this.entityInstance + '-detail.controller' + '.js', this, {});
     this.addAppScriptToIndex(this.entityInstance + '/' + this.entityInstance + '-detail.controller' + '.js');
 
-    this.template('src/main/webapp/components/_entity-service.js',
+    this.template('src/main/webapp/components/_' + templatePrefix + 'entity-service.js',
         'src/main/webapp/scripts/components/entities/' + this.entityInstance + '/' + this.entityInstance + '.service' + '.js', this, {});
     this.addComponentsScriptToIndex(this.entityInstance + '/' + this.entityInstance + '.service' + '.js');
 
     if (this.searchEngine == 'elasticsearch') {
-        this.template('src/main/webapp/components/_entity-search-service.js',
+        this.template('src/main/webapp/components/_' + templatePrefix + 'entity-search-service.js',
             'src/main/webapp/scripts/components/entities/' + this.entityInstance + '/' + this.entityInstance + '.search.service' + '.js', this, {});
         this.addComponentsScriptToIndex(this.entityInstance + '/' + this.entityInstance + '.search.service' + '.js');
     }

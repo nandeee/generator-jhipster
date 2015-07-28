@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('<%=angularAppName%>', ['LocalStorageModule', <% if (enableTranslation) { %>'tmh.dynamicLocale', 'pascalprecht.translate', <% } %>
+angular.module('<%=angularAppName%>', ['ui.grid.autoResize', 'ui.grid.pinning', 'ui.grid.cellNav', 'ui.grid.edit', 'ui.grid', 'ngMaterial', 'LocalStorageModule', <% if (enableTranslation) { %>'tmh.dynamicLocale', 'pascalprecht.translate', <% } %>
                'ui.bootstrap', // for modal dialogs
     'ngResource', 'ui.router', 'ngCookies', 'ngCacheBuster', 'ngFileUpload', 'infinite-scroll'])
 
@@ -114,7 +114,7 @@ angular.module('<%=angularAppName%>', ['LocalStorageModule', <% if (enableTransl
             },
         };
     })
-    .config(function ($stateProvider, $urlRouterProvider, $httpProvider, $locationProvider, <% if (enableTranslation) { %>$translateProvider, tmhDynamicLocaleProvider,<% } %> httpRequestInterceptorCacheBusterProvider) {
+    .config(function ($mdThemingProvider, $stateProvider, $urlRouterProvider, $httpProvider, $locationProvider, <% if (enableTranslation) { %>$translateProvider, tmhDynamicLocaleProvider,<% } %> httpRequestInterceptorCacheBusterProvider) {
 <% if (authenticationType == 'session') { %>
         //enable CSRF
         $httpProvider.defaults.xsrfCookieName = 'CSRF-TOKEN';
@@ -163,4 +163,37 @@ angular.module('<%=angularAppName%>', ['LocalStorageModule', <% if (enableTransl
         tmhDynamicLocaleProvider.useCookieStorage();
         tmhDynamicLocaleProvider.storageKey('NG_TRANSLATE_LANG_KEY');
         <% } %>
-    });
+
+        $mdThemingProvider.theme('grey-theme')
+            .primaryPalette('grey', {
+                'default': '200'
+            });
+    }).directive('validateRequiredCell', ['uiGridConstants', 'uiGridEditConstants',
+    function(uiGridConstants, uiGridEditConstants) {
+        return {
+            require: ['?^uiGrid', '?^uiGridRenderContainer'],
+            scope: true,
+            compile: function() {
+                return {
+                    pre: function($scope, $elm, $attrs) {},
+                    post: function($scope, $elm, $attrs, controllers) {
+                        $elm.bind('blur', function(evt) {
+                            if ($scope.inputForm && !$scope.inputForm.$valid) {
+                                evt.stopImmediatePropagation();
+                            }
+                        });
+                        $elm.bind('keydown', function(evt) {
+                            switch (evt.keyCode) {
+                                case uiGridConstants.keymap.ENTER:
+                                case uiGridConstants.keymap.TAB:
+                                    if ($scope.inputForm && !$scope.inputForm.$valid) {
+                                        evt.stopImmediatePropagation();
+                                    }
+                                    break;
+                            }
+                        });
+                    }
+                };
+            }
+        };
+    }]);

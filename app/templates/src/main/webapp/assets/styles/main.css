@@ -12,6 +12,79 @@ Hide ng-cloak on page load, https://docs.angularjs.org/api/ng/directive/ngCloak
 }
 
 /* ==========================================================================
+Custom
+========================================================================== */
+.tableButton button {
+    margin: 2px 5px;
+    font-weight: bold;
+    font-family: 'Maven Pro', sans-serif;
+    border-style: none;
+    border-radius: 3px;
+    background-color: black;
+    color: white;
+}
+
+md-input-container {
+  min-width: 300px;
+}
+
+.header md-input-container {
+    font-size: 24px;
+    line-height: 24px;
+    padding: 0;
+}
+
+.ui-grid-cell-focus.tableButton {
+    background-color: transparent;
+}
+
+.tableButton {
+    text-align: center;
+}
+
+#grid {
+    margin: 20px 50px;
+}
+
+md-autocomplete {
+    top: 15px;
+    margin: 0 5px;
+}
+
+.header {
+    padding: 10px;
+    margin: 0px;
+    background-color: #3F51B5;
+    color: white;
+    font-family: 'Maven Pro', sans-serif;
+    font-size: 36px;
+    line-height: 48px;
+    font-weight: 300;
+    letter-spacing: -0.04em
+}
+
+.action.md-button {
+    font-size: 24px;
+    font-family: 'Maven Pro', sans-serif;
+    background-color: black;
+    color: white;
+    text-transform: none;
+    float: right;
+}
+
+.action.md-button:hover {
+    background-color: #212121;
+}
+
+input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0px 1000px #CFD8DC inset;
+}
+
+.ui-grid-header-cell {
+    text-align: center;
+}
+
+/* ==========================================================================
 Developement Ribbon
 ========================================================================== */
 .development {

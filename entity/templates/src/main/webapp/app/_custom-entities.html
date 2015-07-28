@@ -1,0 +1,106 @@
+<div>
+    <% var keyPrefix = angularAppName + '.'+ entityInstance + '.'; %>
+        <div layout class="header">
+            <div layout layout-align="center center">
+                <span translate="<%= keyPrefix %>home.title"><%= entityClass %>s</span>
+            </div>
+            <div flex layout layout-align="end">
+                <md-input-container md-theme="grey-theme" ng-show="true" flex="25">
+                    <label>Query</label>
+                    <input type="text" ng-click="search()" ng-model="searchQuery" ng-style="{color:'#E0E0E0'}">
+                </md-input-container>
+            </div>
+            <md-button ng-hide="actionButton" ng-click="showForm=true; actionButton=true;" class="action">Create</md-button>
+            <md-button ng-show="actionButton" ng-click="showForm=false; actionButton=false" class="action">Close</md-button>
+        </div>
+        <md-content md-theme="altTheme" ng-show="showForm" layout-padding>
+            <form name="editForm" ng-submit="save()">
+                <div layout layout-sm="column" layout-wrap>
+                    <md-input-container flex>
+                        <label>ID</label>
+                        <input ng-model="<%=entityInstance %>.id" readonly>
+                    </md-input-container>
+<%  for (fieldId in fields) {
+        var fieldInputType = 'text';
+        var ngModelOption = '';
+        var translationKey = keyPrefix + fields[fieldId].fieldName;
+        if (fields[fieldId].fieldValidate == true) {
+            var fieldValidateRules = fields[fieldId].fieldValidateRules;
+            var rulesArray = new Array();
+            for (var i = 0; i < fieldValidateRules.length; i++) {
+                fieldValidateRules[i]
+                something = fieldValidateRules[i];
+                switch (fieldValidateRules[i]) {
+                  case 'required':
+                    rulesArray.push('required');
+                    break;
+                  case 'minlength':
+                    rulesArray.push('minlength=' + fields[fieldId].fieldValidateRulesMinlength);
+                    break;
+                  case 'maxlength':
+                    rulesArray.push('maxlength=' + fields[fieldId].fieldValidateRulesMaxlength);
+                    break;
+                  case 'pattern':
+                    rulesArray.push('pattern=' + fields[fieldId].fieldValidateRulesPattern);
+                    break;
+                  case 'min':
+                    rulesArray.push('min=' + fields[fieldId].fieldValidateRulesMin);
+                    break;
+                  case 'max':
+                    rulesArray.push('max=' + fields[fieldId].fieldValidateRulesMax);
+                    break;
+                  default:
+                    break;
+                }
+            };
+        }
+        if (fields[fieldId].fieldType == 'Integer' || fields[fieldId].fieldType == 'Long' || fields[fieldId].fieldType == 'BigDecimal') {
+            fieldInputType = 'number';
+        } else if (fields[fieldId].fieldType == 'LocalDate') {
+            fieldInputType = 'date';
+        } else if (fields[fieldId].fieldType == 'DateTime') {
+            fieldInputType = 'datetime-local';
+        } else if (fields[fieldId].fieldType == 'Boolean') {
+            fieldInputType = 'checkbox';
+        } %>
+                    <md-input-container flex>
+                        <label translate="<%= translationKey %>">
+                            <%=fields[fieldId].fieldNameCapitalized%>
+                        </label>
+                        <input type="<%=fieldInputType%>" <%= rulesArray.join(' ') %> ng-model="<%= entityInstance %>.<%= fields[fieldId].fieldName %>">
+                    </md-input-container>
+<%  } %>
+<%  for (relationshipId in relationships) {
+        var otherEntityName = relationships[relationshipId].otherEntityName;
+        var otherEntityNameCapitalized = relationships[relationshipId].otherEntityNameCapitalized;
+        var relationshipName = relationships[relationshipId].relationshipName;
+        var relationshipFieldName = relationships[relationshipId].relationshipFieldName;
+        var translationKey = keyPrefix + relationshipName;
+        var relationShipValue = entityInstance + "." + relationships[relationshipId].relationshipFieldName + ".id";
+        if (dto == 'mapstruct') {
+            relationShipValue = entityInstance + "." + relationships[relationshipId].relationshipFieldName + "Id";
+        }
+        if (relationships[relationshipId].relationshipType == 'many-to-one') { %>
+                     <md-autocomplete md-no-cache="ctrl.noCache" md-selected-item="<%= entityInstance %>.<%= otherEntityName %>" md-search-text="ctrl.searchText<%= otherEntityNameCapitalized %>" md-items="item in ctrl.querySearch(ctrl.searchText<%= otherEntityNameCapitalized %>, '<%= otherEntityName %>s')" md-item-text="item.<%=relationships[relationshipId].otherEntityField %>" md-min-length="0"  placeholder="<%=relationshipName%>" <md-item-template> <span md-highlight-text="ctrl.searchText" md-highlight-flags="^i">{{item.<%=relationships[relationshipId].otherEntityField %>}}</span> </md-item-template> <md-not-found> No matches found for "{{ctrl.searchText}}". </md-not-found> </md-autocomplete>
+                    <md-select ng-show="false" placeholder="<%=relationshipName%>" name="<%= relationshipName %>" ng-model="<%=relationShipValue %>">
+                        <md-option ng-repeat="<%=otherEntityName %> in <%=otherEntityName.toLowerCase() %>s" value="{{<%=otherEntityName %>.id}}">{{
+                            <%=otherEntityName %>.
+                                <%=relationships[relationshipId].otherEntityField %>}}</md-option>
+                    </md-select>
+    <%  } else if (relationships[relationshipId].relationshipType == 'many-to-many' && relationships[relationshipId].ownerSide == true) {
+            relationShipValue = entityInstance + "." + relationshipFieldName + "s"; %>
+                    <div class="form-group">
+                        <label translate="<%= translationKey %>">
+                            <%=relationshipName %>
+                        </label>
+                        <select class="form-control" multiple name="<%= relationshipName %>" ng-model="<%=relationShipValue %>" ng-options="<%=otherEntityName %> as <%=otherEntityName %>.<%=relationships[relationshipId].otherEntityField %> for <%=otherEntityName %> in <%=otherEntityName.toLowerCase() %>s track by <%=otherEntityName %>.id">
+                        </select>
+                    </div>
+<%  } } %>
+                </div>
+                <md-button md-theme="default" type="button" ng-click="clear();" class="action">Clear</md-button>
+                <md-button md-theme="default" class="action">Save</md-button>
+            </form>
+        </md-content>
+        <div id="grid" ui-grid-pinning ui-grid-edit ui-grid-cellNav ui-grid="gridOptions" class="grid"></div>
+</div>
